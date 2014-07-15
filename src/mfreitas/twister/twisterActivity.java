@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.KeyEvent;
+import android.webkit.HttpAuthHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -232,6 +233,11 @@ public class twisterActivity extends Activity {
         public void onPageFinished(WebView view, String url) {
           // TODO Auto-generated method stub
           super.onPageFinished(view, url);
+        }
+        
+        @Override
+        public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+            handler.proceed("user", "pwd");
         }
     }
 }
