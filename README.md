@@ -9,7 +9,11 @@ This is a very simple app, that uses a webview. It's part of this tutorial: http
 Note: to build the apk, two additional files are needed:
 
 1) twisterd:
-cp ../twister-android/src/twisterd libs/armeabi/libtwisterd.so
+# Get 'VirtualBox image to compile twister for Android'
+# http://twister.net.co/?p=449
+# compile native 'twisterd' arm executable.
+zip twisterd.zip twisterd
+cp twisterd.zip res/raw/bin.mp3
 
 2) twister-html:
 cd twister-html

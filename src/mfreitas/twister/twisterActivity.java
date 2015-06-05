@@ -10,6 +10,8 @@ import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import android.app.Application;
 import android.app.Activity;
@@ -56,18 +58,29 @@ public class twisterActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         String htmlPath = this.getApplicationContext().getDir("html", Context.MODE_PRIVATE).getPath();
-        InputStream is = this.getApplicationContext().getResources().openRawResource(R.raw.html);
+        InputStream htmlIs = this.getApplicationContext().getResources().openRawResource(R.raw.html);
         try {
-            streamToDir( is, htmlPath);
+            streamToDir( htmlIs, htmlPath);
         } catch (Exception e) {
-            Log.w(TAG, "unzip error",e);
+            Log.w(TAG, "unzip error html.mp3 (zip)",e);
         }
 
+        String binPath = this.getApplicationContext().getDir("bin", Context.MODE_PRIVATE).getPath();
+        String twisterdBin = binPath + "/twisterd";
+        InputStream binIs = this.getApplicationContext().getResources().openRawResource(R.raw.bin);
+        try {
+            streamToDir( binIs, binPath);
+            chmod(0755, new File(twisterdBin));
+        } catch (Exception e) {
+            Log.w(TAG, "unzip error bin.mp3 (zip)",e);
+        }
+        
+        
         Process proc = null;
-        String libPath = this.getApplicationInfo().nativeLibraryDir;
+        //String libPath = this.getApplicationInfo().nativeLibraryDir;
         String dataPath = getExternalFilesDir(null).getPath();
         try {
-            String[] cmdline = { libPath + "/libtwisterd.so",
+            String[] cmdline = { twisterdBin,
                                  "-daemon", "-genproclimit=1",
                                  "-rpcuser=user", "-rpcpassword=pwd",
                                  "-rpcallowip=127.0.0.1",
@@ -84,7 +97,7 @@ public class twisterActivity extends Activity {
             */
             proc.waitFor();
         } catch (Exception e) {
-            Log.w(TAG, "Unable to exec proc for: " + libPath+"libtwisterd.so",e);
+            Log.w(TAG, "Unable to exec proc for: " + twisterdBin,e);
         }
 
 
@@ -214,6 +227,33 @@ public class twisterActivity extends Activity {
          } finally {
              zis.close();
          }
+    }
+    
+    public static void chmod(int mode, File path) {
+        try {
+            if (!path.exists())
+                throw new IOException();
+            Class<?> fileUtils = Class.forName("android.os.FileUtils");
+            Method setPermissions = fileUtils.getMethod("setPermissions", String.class,
+                    int.class, int.class, int.class);
+            int a = (Integer) setPermissions.invoke(null, path.getAbsolutePath(), mode,
+                    -1, -1);
+            if (a != 0) {
+                Log.i(TAG, "ERROR: android.os.FileUtils.setPermissions() returned " + a
+                        + " for '" + path + "'");
+            }
+        } catch (ClassNotFoundException e) {
+            Log.i(TAG, "android.os.FileUtils.setPermissions() failed - ClassNotFoundException.");
+        } catch (IllegalAccessException e) {
+            Log.i(TAG, "android.os.FileUtils.setPermissions() failed - IllegalAccessException.");
+        } catch (InvocationTargetException e) {
+            Log.i(TAG, "android.os.FileUtils.setPermissions() failed - InvocationTargetException.");
+        } catch (NoSuchMethodException e) {
+            Log.i(TAG, "android.os.FileUtils.setPermissions() failed - NoSuchMethodException.");
+        } catch (IOException e) {
+            Log.e(TAG, path + " does not exist!");
+            e.printStackTrace();
+        }
     }
 
     private class MyCustomWebViewClient extends WebViewClient {
