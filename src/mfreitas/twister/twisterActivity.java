@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.view.KeyEvent;
 import android.webkit.HttpAuthHandler;
@@ -51,6 +52,18 @@ public class twisterActivity extends Activity {
             mUploadMessage = null;  
       }
     }
+
+    private String getDataPath() {
+        String state = Environment.getExternalStorageState();
+        File dataDir;
+
+        if(Environment.MEDIA_MOUNTED.equals(state)) {
+            dataDir = getExternalFilesDir(null);
+        } else {
+            dataDir = getFilesDir();
+        }
+        return dataDir.getPath();
+    }
  
     /** Called when the activity is first created. */
     @Override
@@ -78,7 +91,7 @@ public class twisterActivity extends Activity {
         
         Process proc = null;
         //String libPath = this.getApplicationInfo().nativeLibraryDir;
-        String dataPath = getExternalFilesDir(null).getPath();
+        String dataPath = this.getDataPath();
         try {
             String[] cmdline = { twisterdBin,
                                  "-daemon", "-genproclimit=1",
