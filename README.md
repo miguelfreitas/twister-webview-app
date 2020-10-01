@@ -19,7 +19,8 @@ $ cp twisterd.zip res/raw/bin.mp3
 ```
 
 2) twister-html:
-
+ >this file is automaticaly download in your phone.
+ >then process completed enjoy your app.
 ```
 $ cd twister-html
 $ git archive --format zip --output ../twister-webview-app/res/raw/html.mp3 master
